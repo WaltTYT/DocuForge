@@ -11,7 +11,7 @@
 | 技术 | 版本 | 用途 |
 |------|------|------|
 | Python | 3.12.6 | 主语言 |
-| Pandoc | 3.10 | 文档转换引擎（安装于 `D:\study\pandoc`） |
+| Pandoc | 3.10 | 文档转换引擎（安装于 `C:\Users\Walt\AppData\Roaming\pandoc`） |
 | python-pptx | >=1.0.0 | PPT 文件读写 |
 | PyMuPDF | >=1.24.0 | PDF 文本/图片提取 |
 | Pillow | >=10.0.0 | 图片处理 |
@@ -114,7 +114,7 @@ DocuForge/
 - 文件路径通过 `os.path.abspath()` 规范化
 - 格式校验：仅允许 `.docx`、`.pdf`、`.pptx`、`.md` 四种格式
 - 临时文件在 `finally` 块中清理
-- Pandoc 路径查找：优先检查 `D:\study\pandoc\pandoc.exe`，回退到系统 PATH
+- Pandoc 路径查找：优先检查 `C:\Users\Walt\AppData\Roaming\pandoc\pandoc.exe`，回退到系统 PATH
 
 ---
 
@@ -135,7 +135,7 @@ DocuForge/
 ### 运行环境要求
 
 - Python 3.12+
-- Pandoc 3.10（安装于 `D:\study\pandoc`，需加入系统 PATH 或在指定路径存在）
+- Pandoc 3.10（安装于 `C:\Users\Walt\AppData\Roaming\pandoc`，需加入系统 PATH 或在指定路径存在）
 
 ### 启动步骤
 
@@ -175,7 +175,7 @@ python main.py convert <输入文件> <输出文件>
 
 ## 9. 已知约束
 
-- Pandoc 安装路径固定为 `D:\study\pandoc`
+- Pandoc 安装路径固定为 `C:\Users\Walt\AppData\Roaming\pandoc`
 - PDF 生成依赖 LaTeX 引擎（xelatex），若不可用则回退到 reportlab（功能有限，仅纯文本）
 - PDF 转其他格式仅提取文本内容，不保留原始排版和图片
 - 虚拟环境位于 `venv/` 目录，运行前需激活
