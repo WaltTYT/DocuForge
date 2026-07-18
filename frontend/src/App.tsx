@@ -3,17 +3,18 @@ import { RefreshCw, Zap } from 'lucide-react'
 import FileUpload from '@/components/FileUpload'
 import FormatSelector from '@/components/FormatSelector'
 import ConvertButton from '@/components/ConvertButton'
+import ConvertCompleteModal from '@/components/ConvertCompleteModal'
 import HistoryList from '@/components/HistoryList'
 import FormatInfo, { ConversionPaths } from '@/components/FormatInfo'
-import { convertFile, getHistory, getDownloadUrl, type HistoryItem } from '@/utils/api'
+import { convertFile, getHistory, type HistoryItem } from '@/utils/api'
 import { getFileExtension, type FileFormat } from '@/utils/format'
 
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [targetFormat, setTargetFormat] = useState<FileFormat | null>(null)
   const [isConverting, setIsConverting] = useState(false)
-  const [isComplete, setIsComplete] = useState(false)
   const [resultFile, setResultFile] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -35,17 +36,17 @@ function App() {
   const handleFileSelect = useCallback((file: File) => {
     setSelectedFile(file)
     setTargetFormat(null)
-    setIsComplete(false)
     setResultFile(null)
     setError(null)
+    setModalOpen(false)
   }, [])
 
   const handleClearFile = useCallback(() => {
     setSelectedFile(null)
     setTargetFormat(null)
-    setIsComplete(false)
     setResultFile(null)
     setError(null)
+    setModalOpen(false)
   }, [])
 
   const handleConvert = useCallback(async () => {
@@ -53,14 +54,14 @@ function App() {
 
     setIsConverting(true)
     setError(null)
-    setIsComplete(false)
     setResultFile(null)
+    setModalOpen(false)
 
     try {
       const res = await convertFile(selectedFile, targetFormat)
       if (res.success && res.resultFile) {
-        setIsComplete(true)
         setResultFile(res.resultFile)
+        setModalOpen(true)
         await loadHistory()
       } else {
         setError(res.error || '转换失败')
@@ -118,7 +119,6 @@ function App() {
             <ConvertButton
               onClick={handleConvert}
               isLoading={isConverting}
-              isComplete={isComplete}
               disabled={!selectedFile || !targetFormat}
             />
 
@@ -127,21 +127,22 @@ function App() {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
-
-            {isComplete && resultFile && (
-              <div className="p-4 bg-green-50 border border-green-100 rounded-xl animate-slide-up">
-                <p className="text-sm text-green-700 mb-2">转换成功！</p>
-                <a
-                  href={getDownloadUrl(resultFile)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  download
-                >
-                  下载文件
-                </a>
-              </div>
-            )}
           </div>
         </section>
+
+        {/* Convert Complete Modal */}
+        <ConvertCompleteModal
+          open={modalOpen}
+          resultFile={resultFile || ''}
+          fileName={selectedFile?.name || ''}
+          onClose={() => setModalOpen(false)}
+          onConvertAgain={() => {
+            setModalOpen(false)
+            setResultFile(null)
+            setSelectedFile(null)
+            setTargetFormat(null)
+          }}
+        />
 
         {/* History Section */}
         <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8 animate-slide-up" style={{ animationDelay: '100ms' }}>

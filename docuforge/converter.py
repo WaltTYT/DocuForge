@@ -24,8 +24,7 @@ def _find_pandoc() -> str:
     """查找 pandoc 可执行文件"""
     # 优先检查常见安装路径
     search_paths = [
-        r"D:\study\pandoc\pandoc.exe",
-        r"C:\Users\Walt\AppData\Roaming\pandoc\pandoc.exe",
+        r"C:\Users\Walt\AppData\Local\Pandoc\pandoc.exe",
         r"C:\Program Files\Pandoc\pandoc.exe",
         r"C:\Program Files (x86)\Pandoc\pandoc.exe",
     ]
