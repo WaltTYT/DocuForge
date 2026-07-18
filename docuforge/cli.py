@@ -41,19 +41,7 @@ def main():
     if args.command in ("formats", "f"):
         fmts = get_supported_formats()
         print("支持的格式:", ", ".join(fmts))
-        print("\n支持的转换:")
-        print("  Markdown (.md) <-> Word (.docx)")
-        print("  Markdown (.md) -> PDF (.pdf)")
-        print("  Markdown (.md) -> PPT  (.pptx)")
-        print("  Word (.docx)    -> PDF (.pdf)")
-        print("  Word (.docx)    -> PPT (.pptx)")
-        print("  PDF (.pdf)      -> Markdown (.md)")
-        print("  PDF (.pdf)      -> Word (.docx)")
-        print("  PDF (.pdf)      -> PPT (.pptx)")
-        print("  PPT (.pptx)     -> Markdown (.md)")
-        print("  PPT (.pptx)     -> Word (.docx)")
-        print("  PPT (.pptx)     -> PDF (.pdf)")
-        return
+        print("\n所有格式可通过 Markdown 中转互转")
 
     if args.command in ("convert", "c"):
         if not os.path.isfile(args.input):
