@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, Zap } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import FileUpload from '@/components/FileUpload'
 import FormatSelector from '@/components/FormatSelector'
 import ConvertButton from '@/components/ConvertButton'
@@ -81,9 +81,7 @@ function App() {
       <header className="border-b border-slate-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-xl flex items-center justify-center shadow-lg">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="DocuForge Logo" className="w-12 h-12 rounded-xl shadow-lg object-cover" />
             <div>
               <h1 className="text-xl font-bold text-slate-800">DocuForge</h1>
               <p className="text-xs text-slate-500">文档格式互转工具</p>
