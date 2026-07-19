@@ -47,3 +47,8 @@ export async function getHistory(): Promise<HistoryResponse> {
 export function getDownloadUrl(filename: string): string {
   return `/api/download/${encodeURIComponent(filename)}`
 }
+
+export async function clearHistory(): Promise<{ success: boolean; deleted?: number }> {
+  const response = await api.post('/clear')
+  return response.data
+}

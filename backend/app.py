@@ -132,5 +132,19 @@ def get_history():
     return jsonify({'success': True, 'data': tasks})
 
 
+@app.route('/api/clear', methods=['POST'])
+def clear_history():
+    """清除历史记录和上传/输出文件"""
+    count = 0
+    for d in [UPLOAD_DIR, OUTPUT_DIR]:
+        for fname in os.listdir(d):
+            fpath = os.path.join(d, fname)
+            if os.path.isfile(fpath):
+                os.remove(fpath)
+                count += 1
+    save_history([])
+    return jsonify({'success': True, 'deleted': count})
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
