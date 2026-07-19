@@ -71,9 +71,11 @@ def _run_pandoc(input_file: str, output_file: str, extra_args: list = None):
     cmd = [pandoc, input_file, "-o", output_file]
     if extra_args:
         cmd.extend(extra_args)
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True)
+    stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
+    stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
     if result.returncode != 0:
-        raise RuntimeError(f"Pandoc 转换失败: {result.stderr.strip()}")
+        raise RuntimeError(f"Pandoc 转换失败: {stderr.strip()}")
 
 
 def _get_format(filepath: str) -> str:
@@ -117,7 +119,7 @@ def convert(input_file: str, output_file: str):
     # Step 1: 输入 → Markdown（通过 MarkItDown）
     md = MarkItDown()
     result = md.convert(input_file)
-    md_content = result.text_content
+    md_content = result.text_content or ""
 
     # Step 2: Markdown → 输出（通过 Pandoc）
     with tempfile.NamedTemporaryFile(
@@ -162,6 +164,7 @@ def convert(input_file: str, output_file: str):
 
 def _generate_pdf_with_reportlab(md_content: str, output_file: str):
     """使用 reportlab 生成 PDF（回退方案）"""
+    md_content = md_content or ""
     font_name = _register_chinese_font()
 
     doc = SimpleDocTemplate(

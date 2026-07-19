@@ -151,7 +151,10 @@ def analyze_document(filepath: str) -> DocumentComplexity:
 - [x] 添加 PDF 引擎回退逻辑
 - [x] 添加 reportlab 作为最终回退方案
 - [x] 安装 reportlab 依赖
-- [ ] 验证 Word → PDF 转换
+- [x] 修复 Word → PDF 转换（base64 图片 + 中文字体）
+- [x] 修复中文文件名上传问题（secure_filename 丢失扩展名）
+- [x] 添加 None 值防御性检查（防止 None.strip() 错误）
+- [x] 验证 PPTX → PDF 转换
 
 ### 优化方案（待实施）
 - [ ] 实现文档复杂度分析器 (`analyzer.py`)

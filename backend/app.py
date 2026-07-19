@@ -3,6 +3,7 @@
 import os
 import json
 import uuid
+import traceback
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -56,7 +57,13 @@ def convert_file():
     if not file.filename:
         return jsonify({'success': False, 'error': '文件名为空'}), 400
 
-    ext = os.path.splitext(file.filename)[1].lower()
+    original_filename = file.filename
+    ext = os.path.splitext(original_filename)[1].lower()
+    if not ext:
+        dot_pos = original_filename.rfind('.')
+        if dot_pos > 0:
+            ext = original_filename[dot_pos:].lower()
+
     if ext not in SUPPORTED_FORMATS:
         return jsonify({'success': False, 'error': f'不支持的格式: {ext}'}), 400
 
@@ -68,6 +75,8 @@ def convert_file():
 
     task_id = str(uuid.uuid4())
     safe_name = secure_filename(file.filename)
+    if not safe_name or '.' not in safe_name:
+        safe_name = f"upload{ext}"
     upload_path = os.path.join(UPLOAD_DIR, f"{task_id}_{safe_name}")
     file.save(upload_path)
 
@@ -93,6 +102,8 @@ def convert_file():
             'message': '转换成功',
         })
     except Exception as e:
+        error_detail = traceback.format_exc()
+        print(f"[ERROR] {error_detail}")
         add_history_item({
             'id': task_id,
             'sourceFile': safe_name,
