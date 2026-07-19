@@ -75,6 +75,7 @@ def convert_file():
     output_path = os.path.join(OUTPUT_DIR, f"{task_id}_{result_name}")
 
     try:
+        print(f"[DEBUG] Converting {upload_path} -> {output_path}")
         convert(upload_path, output_path)
         add_history_item({
             'id': task_id,

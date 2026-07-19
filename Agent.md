@@ -10,16 +10,23 @@
 
 | 技术 | 版本 | 用途 |
 |------|------|------|
-| Python | 3.12.6 | 主语言 |
-| Pandoc | 3.10 | 文档转换引擎（安装于 `C:\Users\Walt\AppData\Roaming\pandoc`） |
-| python-pptx | >=1.0.0 | PPT 文件读写 |
-| PyMuPDF | >=1.24.0 | PDF 文本/图片提取 |
-| Pillow | >=10.0.0 | 图片处理 |
-| reportlab | >=4.0.0 | PDF 生成（回退方案） |
+| Python | 3.12.6 | 后端主语言 |
+| Flask | >=2.0.0 | 后端 API 框架 |
+| markitdown | >=0.1.0 | 文档读取引擎（PDF/DOCX/PPTX → Markdown） |
+| Pandoc | 3.10 | 文档写入引擎（Markdown → DOCX/PDF/PPTX） |
+| React | 18.3.1 | 前端框架 |
+| TypeScript | 5.5.3 | 前端类型系统 |
+| Vite | 5.3.1 | 前端构建工具 |
+| TailwindCSS | 3.4.4 | 前端样式框架 |
+| axios | 1.7.2 | HTTP 请求库 |
+| lucide-react | 0.400.0 | 图标组件库 |
 
 ### 架构
 
-单体 CLI 应用，核心转换引擎基于 Pandoc 命令行调用 + Python 库（PyMuPDF、python-pptx、reportlab）补充处理。
+前后端分离架构：
+- **前端**：React + TypeScript + Vite + TailwindCSS，运行在 `http://localhost:5173`
+- **后端**：Flask + markitdown + Pandoc，运行在 `http://localhost:5000`
+- **转换流程**：输入文件 → MarkItDown 读取 → Markdown → Pandoc 写入 → 输出文件
 
 ---
 
@@ -69,15 +76,18 @@
   - 模块/文件名：`snake_case`（如 `converter.py`）
   - 函数/变量名：`snake_case`（如 `_find_pandoc`）
   - 常量：`UPPER_SNAKE_CASE`（如 `SUPPORTED_FORMATS`）
-  - 类名：`PascalCase`
+  - 类名：`PascalCase`（如 `ConvertButton`）
+  - React 组件：`PascalCase`
+  - TypeScript 接口/类型：`PascalCase`
 - 保持代码整洁和可维护
 
 ### 2.5 安全指南
 
 - 不硬编码任何密钥或凭证
 - 文件路径输入需验证，防止路径穿越攻击
-- 临时文件使用后及时清理（`finally` 块中 `os.unlink`）
+- 临时文件使用后及时清理
 - 外部命令调用（subprocess）需验证参数合法性
+- 文件上传需校验格式（仅允许 `.docx`、`.pdf`、`.pptx`、`.md`）
 
 ---
 
@@ -85,14 +95,41 @@
 
 ```
 DocuForge/
-├── main.py                  # 程序入口
+├── main.py                  # CLI 入口
 ├── requirements.txt         # Python 依赖
 ├── Agent.md                 # Agent 规范文件
 ├── venv/                    # Python 虚拟环境
-└── docuforge/               # 核心包
-    ├── __init__.py           # 包定义 & 版本号
-    ├── converter.py          # 核心转换引擎
-    └── cli.py                # CLI 命令行接口
+├── docuforge/               # 核心转换包
+│   ├── __init__.py           # 包定义 & 版本号
+│   ├── converter.py          # 核心转换引擎（MarkItDown + Pandoc）
+│   └── cli.py                # CLI 命令行接口
+├── backend/                 # Flask 后端
+│   ├── app.py                # API 服务入口
+│   ├── requirements.txt      # 后端依赖
+│   ├── uploads/              # 上传文件目录
+│   └── outputs/              # 输出文件目录
+└── frontend/                # React 前端
+    ├── index.html            # HTML 模板
+    ├── package.json          # 前端依赖
+    ├── vite.config.ts        # Vite 配置
+    ├── tailwind.config.js    # TailwindCSS 配置
+    ├── postcss.config.js     # PostCSS 配置
+    ├── tsconfig.json         # TypeScript 配置
+    ├── public/               # 静态资源（logo.png）
+    └── src/
+        ├── main.tsx           # 前端入口
+        ├── App.tsx            # 主应用组件
+        ├── index.css          # 全局样式
+        ├── components/        # UI 组件
+        │   ├── FileUpload.tsx
+        │   ├── FormatSelector.tsx
+        │   ├── ConvertButton.tsx
+        │   ├── ConvertCompleteModal.tsx
+        │   ├── HistoryList.tsx
+        │   └── FormatInfo.tsx
+        └── utils/             # 工具函数
+            ├── api.ts
+            └── format.ts
 ```
 
 ---
@@ -101,10 +138,13 @@ DocuForge/
 
 | 文件 | 用途 |
 |------|------|
-| `requirements.txt` | Python 依赖声明 |
-| `main.py` | 程序入口，调用 CLI 模块 |
-| `docuforge/converter.py` | 核心转换逻辑，Pandoc 调用 + Python 库处理 |
-| `docuforge/cli.py` | argparse CLI 定义（convert / batch / formats 命令） |
+| `requirements.txt` | Python 核心依赖（markitdown[all]） |
+| `backend/requirements.txt` | Flask 后端依赖（flask、flask-cors） |
+| `backend/app.py` | Flask API 服务（/api/convert、/api/history） |
+| `docuforge/converter.py` | 核心转换逻辑（MarkItDown 读取 + Pandoc 写入） |
+| `frontend/package.json` | 前端依赖声明 |
+| `frontend/vite.config.ts` | Vite 构建配置 |
+| `frontend/tailwind.config.js` | TailwindCSS 主题配置 |
 | `venv/` | Python 虚拟环境（激活命令：`.\venv\Scripts\Activate.ps1`） |
 
 ---
@@ -113,8 +153,9 @@ DocuForge/
 
 - 文件路径通过 `os.path.abspath()` 规范化
 - 格式校验：仅允许 `.docx`、`.pdf`、`.pptx`、`.md` 四种格式
-- 临时文件在 `finally` 块中清理
-- Pandoc 路径查找：优先检查 `C:\Users\Walt\AppData\Roaming\pandoc\pandoc.exe`，回退到系统 PATH
+- 临时文件在转换完成后清理
+- Pandoc 路径查找：优先检查 `C:\Users\Walt\AppData\Local\Pandoc\pandoc.exe`，回退到系统 PATH
+- Flask CORS 配置：允许 `http://localhost:5173` 跨域请求
 
 ---
 
@@ -122,11 +163,20 @@ DocuForge/
 
 - 项目暂无自动化测试框架
 - 手动测试方式：
-  ```powershell
-  .\venv\Scripts\Activate.ps1
-  python main.py convert test.md test.docx
-  python main.py formats
-  ```
+
+**后端测试：**
+```powershell
+.\venv\Scripts\Activate.ps1
+python main.py convert test.md test.docx
+python main.py formats
+```
+
+**前端测试：**
+```powershell
+cd frontend
+npm run dev
+```
+访问 `http://localhost:5173` 上传文件测试转换功能
 
 ---
 
@@ -135,49 +185,62 @@ DocuForge/
 ### 运行环境要求
 
 - Python 3.12+
-- Pandoc 3.10（安装于 `C:\Users\Walt\AppData\Roaming\pandoc`，需加入系统 PATH 或在指定路径存在）
+- Node.js 20+
+- Pandoc 3.10（安装于 `C:\Users\Walt\AppData\Local\Pandoc`，需加入系统 PATH）
 
 ### 启动步骤
 
+**后端：**
 ```powershell
 cd d:\study\TraeProject\DocuForge
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python main.py convert <输入文件> <输出文件>
+pip install flask flask-cors
+python backend/app.py
 ```
+
+**前端：**
+```powershell
+cd d:\study\TraeProject\DocuForge\frontend
+npm install
+npm run dev
+```
+
+访问 `http://localhost:5173` 即可使用
 
 ---
 
 ## 8. 版本控制
 
-- **远程仓库**：未配置
-- **当前分支**：未初始化 Git 仓库
+- **远程仓库**：`https://github.com/WaltTYT/DocuForge`
+- **当前分支**：`main`
 
 ### 8.1 提交格式规范
 
 | 类型 | 格式 | 说明 | 示例 |
 |------|------|------|------|
-| 初始化项目 | `init(模块 : 初始化描述)` | 初始化项目结构、配置文件 | `init(all : 初始化 DocuForge 项目)` |
-| 增加功能 | `add(模块 : 功能描述)` | 添加新功能、新依赖、新文件 | `add(核心 : 添加 PDF 转 Word 功能)` |
-| 修复bug | `fix(模块 : 修复描述)` | 修复问题、修正错误 | `fix(核心 : 修复中文 PDF 编码问题)` |
-| 删除内容 | `delete(模块 : 删除描述)` | 删除文件、移除无用代码 | `delete(核心 : 移除废弃的转换方法)` |
-| 重构 | `refactor(模块 : 重构描述)` | 代码重构，不改变功能 | `refactor(核心 : 优化转换路由逻辑)` |
-| 文档 | `docs(模块 : 文档描述)` | 更新文档 | `docs(README : 更新使用说明)` |
+| 初始化项目 | `init(模块: 初始化描述)` | 初始化项目结构、配置文件 | `init(all: 初始化 DocuForge 项目)` |
+| 增加功能 | `add(模块: 功能描述)` | 添加新功能、新依赖、新文件 | `add(后端: 添加批量转换功能)` |
+| 修复bug | `fix(模块: 修复描述)` | 修复问题、修正错误 | `fix(前端: 修复图片尺寸限制)` |
+| 删除内容 | `delete(模块: 删除描述)` | 删除文件、移除无用代码 | `delete(前端: 删除默认模板文件)` |
+| 重构 | `refactor(模块: 重构描述)` | 代码重构，不改变功能 | `refactor(后端: 优化异常处理)` |
+| 文档 | `docs(模块: 文档描述)` | 更新文档 | `docs(README: 更新部署说明)` |
 
 ### 8.2 提交格式规则
 
-- **模块标识**：使用 `核心`、`CLI`、`all` 或具体模块名
-- **分隔符**：使用 `:` 分隔模块和描述，两侧各有一个空格
+- **模块标识**：使用 `后端`、`前端`、`核心`、`all` 或具体模块名
+- **分隔符**：使用 `:` 分隔模块和描述，**无空格**
 - **多提交**：使用 `&&` 连接多个提交类型，前后各有一个空格
-- **示例**：`add(核心 : 添加批量转换功能) && fix(CLI : 修复参数解析错误)`
+- **示例**：`add(核心: 添加批量转换功能) && fix(CLI: 修复参数解析错误)`
 
 ---
 
 ## 9. 已知约束
 
-- Pandoc 安装路径固定为 `C:\Users\Walt\AppData\Roaming\pandoc`
-- PDF 生成依赖 LaTeX 引擎（xelatex），若不可用则回退到 reportlab（功能有限，仅纯文本）
-- PDF 转其他格式仅提取文本内容，不保留原始排版和图片
+- Pandoc 安装路径：`C:\Users\Walt\AppData\Local\Pandoc\pandoc.exe`
+- 转换流程：输入文件 → MarkItDown → Markdown → Pandoc → 输出文件
+- 前端运行端口：`http://localhost:5173`
+- 后端运行端口：`http://localhost:5000`
 - 虚拟环境位于 `venv/` 目录，运行前需激活
 
 ---

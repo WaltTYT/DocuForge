@@ -12,3 +12,10 @@ build/
 node_modules/
 frontend/dist/
 frontend/.eslintcache
+
+# 运行时生成的文件
+backend/uploads/
+backend/outputs/
+backend/history.json
+*.log
+1.txt
