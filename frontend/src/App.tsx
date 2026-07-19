@@ -4,6 +4,7 @@ import FileUpload from '@/components/FileUpload'
 import FormatSelector from '@/components/FormatSelector'
 import ConvertButton from '@/components/ConvertButton'
 import ConvertCompleteModal from '@/components/ConvertCompleteModal'
+import ConfirmModal from '@/components/ConfirmModal'
 import HistoryList from '@/components/HistoryList'
 import FormatInfo, { ConversionPaths } from '@/components/FormatInfo'
 import { convertFile, getHistory, clearHistory, type HistoryItem } from '@/utils/api'
@@ -17,6 +18,7 @@ function App() {
   const [modalOpen, setModalOpen] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   const loadHistory = useCallback(async () => {
     try {
@@ -73,8 +75,12 @@ function App() {
     }
   }, [selectedFile, targetFormat, loadHistory])
 
-  const handleClear = useCallback(async () => {
-    if (!window.confirm('确定清除所有历史记录和文件吗？')) return
+  const handleClear = useCallback(() => {
+    setShowConfirmModal(true)
+  }, [])
+
+  const handleConfirmClear = useCallback(async () => {
+    setShowConfirmModal(false)
     try {
       await clearHistory()
       setHistory([])
@@ -177,6 +183,14 @@ function App() {
             setSelectedFile(null)
             setTargetFormat(null)
           }}
+        />
+
+        <ConfirmModal
+          open={showConfirmModal}
+          title="确认清除"
+          message="确定清除所有历史记录和文件吗？此操作不可恢复。"
+          onConfirm={handleConfirmClear}
+          onCancel={() => setShowConfirmModal(false)}
         />
 
         <section className="bg-white rounded-3xl shadow-card p-8 mb-8 animate-slide-up border border-slate-100" style={{ animationDelay: '100ms' }}>
